@@ -5,6 +5,7 @@ import {
   UploadedFile,
   UploadedFiles,
   UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { MessagingService } from './messaging.service';
@@ -56,12 +57,16 @@ export class MessagingController {
     const { message } = body;
 
     // Parse all files and collect tokens
-    const tokenPromises = files.map((file) => this.parseCsv(file.buffer));
-    const tokensArrays = await Promise.all(tokenPromises);
-    const tokens = tokensArrays.flat();
+    try {
+      const tokenPromises = files.map((file) => this.parseFile(file));
+      const tokensArrays = await Promise.all(tokenPromises);
+      const tokens = tokensArrays.flat();
 
-    await this.messageQueue.add({ tokens, message });
-    return { status: 'queued' };
+      await this.messageQueue.add({ tokens, message });
+      return { status: 'queued' };
+    } catch (error) {
+      throw new BadRequestException('Failed to parse one or more files.');
+    }
   }
 
   private async parseFile(file: Express.Multer.File): Promise<string[]> {

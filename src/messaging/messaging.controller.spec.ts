@@ -71,4 +71,21 @@ describe('MessagingController (e2e)', () => {
     expect(response.status).toBe(201);
     expect(response.body).toHaveProperty('status', 'queued');
   });
+
+  it('/messaging/send-multiple (POST) - should fail if any file upload fails', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/messaging/send-multiple')
+      .field(
+        'message',
+        JSON.stringify({ title: 'Test', body: 'This is a test message' }),
+      )
+      .attach('files', path.join(__dirname, 'test-files', 'test.csv'))
+      .attach('files', path.join(__dirname, 'test-files', 'invalid.txt')); // Assume invalid.txt is an invalid file
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty(
+      'message',
+      'Failed to parse one or more files.',
+    );
+  });
 });
