@@ -13,6 +13,7 @@ import { Queue } from 'bull';
 import * as csv from 'csv-parser';
 import { Readable } from 'stream';
 import * as XLSX from 'xlsx';
+import { SendMessageDto } from './dto/send-message.dto';
 
 @Controller('messaging')
 export class MessagingController {
@@ -24,7 +25,7 @@ export class MessagingController {
   @Post('send')
   @UseInterceptors(FileInterceptor('file'))
   async sendMessages(
-    @Body() body: any,
+    @Body() body: SendMessageDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
     const { tokens, message } = body;
@@ -49,7 +50,7 @@ export class MessagingController {
   @Post('send-multiple')
   @UseInterceptors(FilesInterceptor('files'))
   async sendMessagesFromMultipleFiles(
-    @Body() body: any,
+    @Body() body: SendMessageDto,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
     const { message } = body;
