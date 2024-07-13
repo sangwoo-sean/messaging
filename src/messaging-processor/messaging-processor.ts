@@ -9,6 +9,7 @@ export class MessagingProcessor {
   @Process()
   async handleTranscode(job: Job) {
     const { tokens, message } = job.data;
+    console.log('Process', tokens, message);
     return await this.messagingService.sendMessage(tokens, message);
   }
 }

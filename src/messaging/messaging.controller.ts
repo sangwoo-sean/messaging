@@ -37,6 +37,7 @@ export class MessagingController {
 
     // If tokens are provided in the body
     if (tokens) {
+      console.log('Received & Queue', message, tokens);
       await this.messageQueue.add({ tokens, message });
       return { status: 'queued' };
     }
