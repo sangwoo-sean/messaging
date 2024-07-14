@@ -7,6 +7,7 @@ import { MessagingProcessor } from './messaging-processor/messaging-processor';
 import { AllExceptionsFilter } from './logging/all-exceptions.filter';
 import { LoggingInterceptor } from './logging/logging.interceptor';
 import { winstonLogger } from './logging/winston.logger';
+import { QueueService } from './queue/queue.service';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { winstonLogger } from './logging/winston.logger';
   ],
   controllers: [MessagingController],
   providers: [
+    QueueService,
     MessagingService,
     MessagingProcessor,
     { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },

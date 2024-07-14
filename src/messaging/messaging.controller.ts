@@ -8,20 +8,15 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { MessagingService } from './messaging.service';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
 import * as csv from 'csv-parser';
 import { Readable } from 'stream';
 import * as XLSX from 'xlsx';
 import { SendMessageDto } from './dto/send-message.dto';
+import { QueueService } from '../queue/queue.service';
 
 @Controller('messaging')
 export class MessagingController {
-  constructor(
-    private readonly messagingService: MessagingService,
-    @InjectQueue('message-queue') private readonly messageQueue: Queue,
-  ) {}
+  constructor(private readonly queueService: QueueService) {}
 
   @Post('send')
   @UseInterceptors(FileInterceptor('file'))
@@ -34,14 +29,14 @@ export class MessagingController {
     // If a file is uploaded, parse the file for tokens
     if (file) {
       const tokensFromFile = await this.parseFile(file);
-      await this.messageQueue.add({ tokens: tokensFromFile, message });
+      await this.queueService.addMessage({ tokens: tokensFromFile, message });
       return { status: 'queued' };
     }
 
     // If tokens are provided in the body
     if (tokens) {
       console.log('Received & Queue', message, tokens);
-      await this.messageQueue.add({ tokens, message });
+      await this.queueService.addMessage({ tokens, message });
       return { status: 'queued' };
     }
 
@@ -62,7 +57,7 @@ export class MessagingController {
       const tokensArrays = await Promise.all(tokenPromises);
       const tokens = tokensArrays.flat();
 
-      await this.messageQueue.add({ tokens, message });
+      await this.queueService.addMessage({ tokens, message });
       return { status: 'queued' };
     } catch (error) {
       throw new BadRequestException('Failed to parse one or more files.');
