@@ -6,6 +6,8 @@ import {
   UploadedFiles,
   UseInterceptors,
   BadRequestException,
+  Get,
+  Param,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import * as csv from 'csv-parser';
@@ -13,10 +15,15 @@ import { Readable } from 'stream';
 import * as XLSX from 'xlsx';
 import { SendMessageDto } from './dto/send-message.dto';
 import { QueueService } from '../queue/queue.service';
+import { InMemoryStorageService } from './in-memory-storage.service';
+import { v4 as uuidv4 } from 'uuid';
 
 @Controller('messaging')
 export class MessagingController {
-  constructor(private readonly queueService: QueueService) {}
+  constructor(
+    private readonly queueService: QueueService,
+    private readonly storageService: InMemoryStorageService,
+  ) {}
 
   @Post('send')
   @UseInterceptors(FileInterceptor('file'))
@@ -25,22 +32,39 @@ export class MessagingController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     const { tokens, message } = body;
+    const requestId = uuidv4();
+
+    this.storageService.createRequest(requestId, 'queued');
 
     // If a file is uploaded, parse the file for tokens
     if (file) {
-      const tokensFromFile = await this.parseFile(file);
-      await this.queueService.addMessage({ tokens: tokensFromFile, message });
-      return { status: 'queued' };
+      try {
+        const tokensFromFile = await this.parseFile(file);
+        await this.queueService.addMessage({
+          tokens: tokensFromFile,
+          message,
+          requestId,
+        });
+        return { status: 'queued', requestId };
+      } catch (error) {
+        this.storageService.updateRequest(requestId, 'failed', error.message);
+        throw new BadRequestException('Failed to parse file.');
+      }
     }
 
     // If tokens are provided in the body
     if (tokens) {
       console.log('Received & Queue', message, tokens);
-      await this.queueService.addMessage({ tokens, message });
-      return { status: 'queued' };
+      await this.queueService.addMessage({ tokens, message, requestId });
+      return { status: 'queued', requestId };
     }
 
-    throw new Error('No valid input found');
+    this.storageService.updateRequest(
+      requestId,
+      'failed',
+      'No valid input found',
+    );
+    throw new BadRequestException('No valid input found');
   }
 
   @Post('send-multiple')
@@ -50,18 +74,35 @@ export class MessagingController {
     @UploadedFiles() files: Express.Multer.File[],
   ) {
     const { message } = body;
+    const requestId = uuidv4();
 
-    // Parse all files and collect tokens
+    // Initialize request status
+    this.storageService.createRequest(requestId, 'queued');
+
     try {
       const tokenPromises = files.map((file) => this.parseFile(file));
       const tokensArrays = await Promise.all(tokenPromises);
       const tokens = tokensArrays.flat();
 
-      await this.queueService.addMessage({ tokens, message });
-      return { status: 'queued' };
+      await this.queueService.addMessage({ tokens, message, requestId });
+      return { status: 'queued', requestId };
     } catch (error) {
+      this.storageService.updateRequest(
+        requestId,
+        'failed',
+        'Failed to parse one or more files.',
+      );
       throw new BadRequestException('Failed to parse one or more files.');
     }
+  }
+
+  @Get('status/:id')
+  getRequestStatus(@Param('id') id: string) {
+    const status = this.storageService.getRequestStatus(id);
+    if (!status) {
+      throw new BadRequestException('Invalid request ID');
+    }
+    return status;
   }
 
   private async parseFile(file: Express.Multer.File): Promise<string[]> {

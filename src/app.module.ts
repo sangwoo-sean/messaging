@@ -8,6 +8,7 @@ import { AllExceptionsFilter } from './logging/all-exceptions.filter';
 import { LoggingInterceptor } from './logging/logging.interceptor';
 import { winstonLogger } from './logging/winston.logger';
 import { QueueService } from './queue/queue.service';
+import { InMemoryStorageService } from './messaging/in-memory-storage.service';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { QueueService } from './queue/queue.service';
     QueueService,
     MessagingService,
     MessagingProcessor,
+    InMemoryStorageService,
     { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
     {
