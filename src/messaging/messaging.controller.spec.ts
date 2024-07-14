@@ -3,14 +3,24 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../app.module';
 import * as path from 'path';
+import { getQueueToken } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 describe('MessagingController (e2e)', () => {
   let app: INestApplication;
+  const mockQueue: Queue = {
+    add: jest.fn(),
+    process: jest.fn(),
+    // Add other methods you may use
+  } as unknown as Queue;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(getQueueToken('message-queue'))
+      .useValue(mockQueue)
+      .compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
