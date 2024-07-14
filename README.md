@@ -10,23 +10,38 @@
 #### 1.1. Input
 
 #### 1.1.1. Body
-- body로 title, description, tokens 를 받아 대상 token 들에게 발송요청
-- 토큰(들) 검증 이후 메세지 큐잉
+- title
+- description
+- tokens
+ 
+토큰(들) 검증 이후 메세지 큐잉
 
 #### 1.1.2. File
-- body로 title, description 를 받고, 대상을 파일로 받아 대상 token 들에게 발송요청
-- 파일 파싱이 완료되면 메세지 큐잉 시작
+- body
+  - title
+  - description
+- file
+  - tokens
+ 
+파일 파싱이 완료되면 메세지 큐잉 시작
 
 #### 1.1.3. Multiple files
-- body로 title, description 를 받고, 대상을 여러개의 파일로 받아 대상 token 들에게 발송요청. 
-- **모든 파일**의 파싱이 완료된것 확인 후 메세지 큐잉 시작
+- body
+  - title
+  - description
+- file
+  - tokens
+
+**모든 파일**의 파싱이 완료된것 확인 후 메세지 큐잉 시작
 
 #### 1.2. Output
-- 성공시: request ID
-- 실패시: error message
-  - 유효하지 않은 토큰
-  - 유효하지 않은 파일
-  - 500
+- 성공시
+  - request ID
+- 실패시
+  - error message
+    - 유효하지 않은 토큰
+    - 유효하지 않은 파일
+    - 500
 
 
 ### 2. 처리 결과 조회
@@ -47,10 +62,14 @@
 - requested time
 
 
-
-
 ---
 
+GPT conversation [Link](https://chatgpt.com/share/2f6c9904-7777-4f3b-a920-c694694530f5)
+
+---
 ## 질문
 
-- 각 요청에 대한 상태와 한 요청 안의 각 전송에 대한 상태를 모두 기록해야하는가?
+- 각 요청에 대한 상태와 (request A: success)
+- 한 요청 안의 각 전송에 대한 상태 (request A - msg a: success / msg b: success / msg b: fail )
+
+모두 기록해야하는가?
