@@ -19,7 +19,7 @@ export class InMemoryStorageService {
       status: 'queued',
     }));
 
-    this.storage.set(id, { id, title, body, receivers });
+    this.storage.set(id, { id, title, description: body, receivers });
   }
 
   updateRequestSuccess(requestId: string, tokens: string[]): void {

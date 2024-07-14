@@ -3,7 +3,7 @@ export type MessagingStatus = 'queued' | 'processing' | 'completed' | 'failed';
 export class RequestEntity {
   id: string;
   title: string;
-  body: string;
+  description: string;
   receivers: ReceiverEntity[];
   //createdAt
 }
