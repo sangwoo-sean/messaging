@@ -34,8 +34,6 @@ export class MessagingController {
     const { tokens, message } = body;
     const requestId = uuidv4();
 
-    this.storageService.createRequest(requestId, 'queued');
-
     // If a file is uploaded, parse the file for tokens
     if (file) {
       try {
@@ -45,6 +43,14 @@ export class MessagingController {
           message,
           requestId,
         });
+
+        this.storageService.createRequest(
+          requestId,
+          'queued',
+          message.title,
+          message.body,
+          tokensFromFile,
+        );
         return { status: 'queued', requestId };
       } catch (error) {
         this.storageService.updateRequest(requestId, 'failed', error.message);
@@ -55,6 +61,13 @@ export class MessagingController {
     // If tokens are provided in the body
     if (tokens) {
       console.log('Received & Queue', message, tokens);
+      this.storageService.createRequest(
+        requestId,
+        'queued',
+        message.title,
+        message.body,
+        tokens,
+      );
       await this.queueService.addMessage({ tokens, message, requestId });
       return { status: 'queued', requestId };
     }
@@ -76,14 +89,18 @@ export class MessagingController {
     const { message } = body;
     const requestId = uuidv4();
 
-    // Initialize request status
-    this.storageService.createRequest(requestId, 'queued');
-
     try {
       const tokenPromises = files.map((file) => this.parseFile(file));
       const tokensArrays = await Promise.all(tokenPromises);
       const tokens = tokensArrays.flat();
 
+      this.storageService.createRequest(
+        requestId,
+        'queued',
+        message.title,
+        message.body,
+        tokens,
+      );
       await this.queueService.addMessage({ tokens, message, requestId });
       return { status: 'queued', requestId };
     } catch (error) {

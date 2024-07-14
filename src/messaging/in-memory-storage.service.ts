@@ -8,13 +8,25 @@ import {
 export class InMemoryStorageService {
   private storage: Map<string, RequestStatus> = new Map();
 
-  createRequest(id: string, status: MessagingStatus, message?: string): void {
-    this.storage.set(id, { id, status, message });
+  createRequest(
+    id: string,
+    status: MessagingStatus,
+    title: string,
+    body: string,
+    tokens: string[],
+    errorMessage?: string,
+  ): void {
+    this.storage.set(id, { id, status, title, body, tokens, errorMessage });
   }
 
-  updateRequest(id: string, status: MessagingStatus, message?: string): void {
+  updateRequest(
+    id: string,
+    status: MessagingStatus,
+    errorMessage?: string,
+  ): void {
     if (this.storage.has(id)) {
-      this.storage.set(id, { id, status, message });
+      const requestStatus: RequestStatus = this.storage.get(id);
+      this.storage.set(id, { ...requestStatus, status, errorMessage });
     }
   }
 
