@@ -13,13 +13,24 @@ export class MessagingProcessor {
   @Process()
   async handleTranscode(job: Job) {
     const { tokens, message, requestId } = job.data;
-    this.storageService.updateRequest(requestId, 'processing');
 
     try {
-      await this.messagingService.sendMessage(tokens, message);
-      this.storageService.updateRequest(requestId, 'completed');
+      const result = await this.messagingService.sendMessage(tokens, message);
+
+      this.storageService.updateRequestSuccess(
+        requestId,
+        result.filter((r) => r.result === 200).map((r) => r.token),
+      );
+
+      this.storageService.updateRequestFailed(
+        requestId,
+        result.filter((r) => r.result !== 200),
+      );
     } catch (error) {
-      this.storageService.updateRequest(requestId, 'failed', error.message);
+      this.storageService.updateRequestFailed(
+        requestId,
+        tokens.map((t: string) => ({ token: t, message: error.message })),
+      );
     }
   }
 }

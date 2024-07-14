@@ -39,7 +39,6 @@ describe('MessagingController (e2e)', () => {
       });
 
     expect(response.status).toBe(201);
-    expect(response.body).toHaveProperty('status', 'queued');
     expect(response.body).toHaveProperty('requestId');
 
     const requestId = response.body.requestId;
@@ -48,7 +47,6 @@ describe('MessagingController (e2e)', () => {
     );
 
     expect(statusResponse.status).toBe(200);
-    expect(statusResponse.body).toHaveProperty('status', 'queued');
   });
 
   it('/messaging/send (POST) - should handle CSV file upload', async () => {
@@ -70,7 +68,6 @@ describe('MessagingController (e2e)', () => {
     );
 
     expect(statusResponse.status).toBe(200);
-    expect(statusResponse.body).toHaveProperty('status', 'queued');
   });
 
   it('/messaging/send (POST) - should handle XLSX file upload', async () => {
@@ -83,7 +80,6 @@ describe('MessagingController (e2e)', () => {
       .attach('file', path.join(__dirname, 'test-files', 'test.xlsx'));
 
     expect(response.status).toBe(201);
-    expect(response.body).toHaveProperty('status', 'queued');
     expect(response.body).toHaveProperty('requestId');
 
     const requestId = response.body.requestId;
@@ -92,7 +88,6 @@ describe('MessagingController (e2e)', () => {
     );
 
     expect(statusResponse.status).toBe(200);
-    expect(statusResponse.body).toHaveProperty('status', 'queued');
   });
 
   it('/messaging/send-multiple (POST) - should handle multiple file uploads', async () => {
@@ -106,7 +101,6 @@ describe('MessagingController (e2e)', () => {
       .attach('files', path.join(__dirname, 'test-files', 'test.xlsx'));
 
     expect(response.status).toBe(201);
-    expect(response.body).toHaveProperty('status', 'queued');
     expect(response.body).toHaveProperty('requestId');
 
     const requestId = response.body.requestId;
@@ -115,7 +109,6 @@ describe('MessagingController (e2e)', () => {
     );
 
     expect(statusResponse.status).toBe(200);
-    expect(statusResponse.body).toHaveProperty('status', 'queued');
   });
 
   it('/messaging/send-multiple (POST) - should fail if any file upload fails', async () => {

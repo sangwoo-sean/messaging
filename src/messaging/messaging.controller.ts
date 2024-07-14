@@ -46,21 +46,12 @@ export class MessagingController {
 
         this.storageService.createRequest(
           requestId,
-          'queued',
           message.title,
           message.body,
           tokensFromFile,
         );
         return { status: 'queued', requestId };
       } catch (error) {
-        this.storageService.createRequest(
-          requestId,
-          'failed',
-          message.title,
-          message.body,
-          [],
-          error.message,
-        );
         throw new BadRequestException('Failed to parse file.');
       }
     }
@@ -70,7 +61,6 @@ export class MessagingController {
       console.log('Received & Queue', message, tokens);
       this.storageService.createRequest(
         requestId,
-        'queued',
         message.title,
         message.body,
         tokens,
@@ -79,11 +69,6 @@ export class MessagingController {
       return { status: 'queued', requestId };
     }
 
-    this.storageService.updateRequest(
-      requestId,
-      'failed',
-      'No valid input found',
-    );
     throw new BadRequestException('No valid input found');
   }
 
@@ -101,7 +86,6 @@ export class MessagingController {
 
       this.storageService.createRequest(
         requestId,
-        'queued',
         message.title,
         message.body,
         tokens,
@@ -109,14 +93,6 @@ export class MessagingController {
       await this.queueService.addMessage({ tokens, message, requestId });
       return { status: 'queued', requestId };
     } catch (error) {
-      this.storageService.createRequest(
-        requestId,
-        'failed',
-        message.title,
-        message.body,
-        [],
-        error.message,
-      );
       throw new BadRequestException(error.message);
     }
   }

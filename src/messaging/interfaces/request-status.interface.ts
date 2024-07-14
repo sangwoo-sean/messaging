@@ -1,10 +1,16 @@
 export type MessagingStatus = 'queued' | 'processing' | 'completed' | 'failed';
 
-export interface RequestStatus {
+export class RequestEntity {
   id: string;
-  status: MessagingStatus;
   title: string;
   body: string;
-  tokens: string[];
+  receivers: ReceiverEntity[];
+  //createdAt
+}
+
+export class ReceiverEntity {
+  token: string;
+  status: MessagingStatus;
   errorMessage?: string;
+  //sentAt
 }
