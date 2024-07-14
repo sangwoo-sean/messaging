@@ -11,6 +11,6 @@ export class RequestEntity {
 export class ReceiverEntity {
   token: string;
   status: MessagingStatus;
-  errorMessage?: string;
+  message?: string;
   //sentAt
 }

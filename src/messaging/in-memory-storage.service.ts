@@ -56,7 +56,7 @@ export class InMemoryStorageService {
         return {
           ...receiver,
           status: 'failed',
-          errorMessage: result.message,
+          message: result.message,
         };
       }
       return receiver;
