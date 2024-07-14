@@ -1,73 +1,45 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Messaging Server
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Roles
+### 1. 메세지 전송
+- 데이터 검증
+  - 파일 파싱 및 token 값 검증
+- 메세지 전송을 queue service (dispatcher) 에게 요청
+- 데이터 베이스에 받은 요청과 처리 상태값 저장
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+#### 1.1. Input
 
-## Description
+#### 1.1.1. Body
+> body로 title, description, tokens 를 받아 대상 token 들에게 발송요청
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+#### 1.1.2. File
+> body로 title, description 를 받고, 대상을 파일로 받아 대상 token 들에게 발송요청
 
-## Installation
+#### 1.1.3. Multiple files
+> body로 title, description 를 받고, 대상을 여러개의 파일로 받아 대상 token 들에게 발송요청.
 
-```bash
-$ pnpm install
-```
+#### 1.2. Output
+- request ID 
+- status (failed/queued)
 
-## Running the app
+#### 1.3. Error handling
+- 요청 실패
+  - 유효하지 않은 body / file
+- 여러 파일로 요청하는 경우, 모든 파일의 파싱이 완료되어야 성공처리
 
-```bash
-# development
-$ pnpm run start
+### 2. 처리 결과 조회
+성공적인 요청에 한해, 각 메세지 전송건들에 대한 결과를 조회할 수 있다.
 
-# watch mode
-$ pnpm run start:dev
+#### 2.1. Input
+- request ID
 
-# production mode
-$ pnpm run start:prod
-```
-
-## Test
-
-```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+#### 2.2. Output
+- title
+- description
+- target tokens count
+- target tokens
+  - token
+  - status (queued, completed, failed)
+  - error message (optional)
+  - sent time
+- requested time
