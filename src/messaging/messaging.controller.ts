@@ -53,7 +53,14 @@ export class MessagingController {
         );
         return { status: 'queued', requestId };
       } catch (error) {
-        this.storageService.updateRequest(requestId, 'failed', error.message);
+        this.storageService.createRequest(
+          requestId,
+          'failed',
+          message.title,
+          message.body,
+          [],
+          error.message,
+        );
         throw new BadRequestException('Failed to parse file.');
       }
     }
@@ -90,9 +97,7 @@ export class MessagingController {
     const requestId = uuidv4();
 
     try {
-      const tokenPromises = files.map((file) => this.parseFile(file));
-      const tokensArrays = await Promise.all(tokenPromises);
-      const tokens = tokensArrays.flat();
+      const tokens = await this.parseFilesUnsafe(files);
 
       this.storageService.createRequest(
         requestId,
@@ -104,12 +109,15 @@ export class MessagingController {
       await this.queueService.addMessage({ tokens, message, requestId });
       return { status: 'queued', requestId };
     } catch (error) {
-      this.storageService.updateRequest(
+      this.storageService.createRequest(
         requestId,
         'failed',
-        'Failed to parse one or more files.',
+        message.title,
+        message.body,
+        [],
+        error.message,
       );
-      throw new BadRequestException('Failed to parse one or more files.');
+      throw new BadRequestException(error.message);
     }
   }
 
@@ -130,6 +138,18 @@ export class MessagingController {
       return this.parseXlsx(file.buffer);
     } else {
       throw new Error('Unsupported file format');
+    }
+  }
+
+  private async parseFilesUnsafe(
+    files: Express.Multer.File[],
+  ): Promise<string[]> {
+    try {
+      const tokenPromises = files.map((file) => this.parseFile(file));
+      const tokensArrays = await Promise.all(tokenPromises);
+      return tokensArrays.flat();
+    } catch (e) {
+      throw new BadRequestException('Failed to parse one or more files.');
     }
   }
 
